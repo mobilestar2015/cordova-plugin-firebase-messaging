@@ -82,5 +82,6 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <source-file src="src/android/FirebaseMessagingPluginService.java"
             target-dir="src/by/chemerisuk/cordova/firebase" />
     </platform>
-
+    <hook src="scripts/fcm_config_files_process.js" type="after_plugin_add" />
+	<hook src="scripts/fcm_config_files_process.js" type="after_prepare" />
 </plugin>
