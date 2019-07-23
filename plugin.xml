@@ -45,15 +45,8 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <header-file src="src/ios/FirebaseMessagingPlugin.h" />
         <source-file src="src/ios/FirebaseMessagingPlugin.m" />
 
-        <podspec>
-            <config>
-                <source url="https://github.com/CocoaPods/Specs.git"/>
-            </config>
-            <pods>
-                <pod name="Firebase/Core" spec="~> 6.3.0" />
-                <pod name="Firebase/Messaging" spec="~> 6.3.0" />
-            </pods>
-        </podspec>
+        <pod name="Firebase/Core" spec="~> 6.3.0" />
+        <pod name="Firebase/Messaging" spec="~> 6.3.0" />
     </platform>
 
     <platform name="android">
