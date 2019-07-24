@@ -69,7 +69,7 @@
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     BOOL value = application.applicationState != UIApplicationStateActive;
 
-    [self postNotification:userInfo background:value];
+    // [self postNotification:userInfo background:value];
 
     completionHandler(UIBackgroundFetchResultNewData);
 }
