@@ -26,8 +26,7 @@ var ANDROID_DIR_RES_VALUES_DIR = ANDROID_DIR + '/app/src/main/res/values';
 var PLATFORM = {
     IOS: {
         dest: [
-            IOS_DIR + '/' + name + '/Resources/GoogleService-Info.plist',
-            IOS_DIR + '/' + name + '/Resources/Resources/GoogleService-Info.plist'
+            IOS_DIR + '/' + name + '/Resources/GoogleService-Info.plist'
         ],
         src: [
             'GoogleService-Info.plist',
