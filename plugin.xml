@@ -44,6 +44,7 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         <source-file src="src/ios/AppDelegate+FirebaseMessagingPlugin.m" />
         <header-file src="src/ios/FirebaseMessagingPlugin.h" />
         <source-file src="src/ios/FirebaseMessagingPlugin.m" />
+        <resource-file src="src/ios/GoogleService-Info.plist" target="Resources/GoogleService-Info.plist" />
 
         <pod name="Firebase/Core" spec="~> 6.3.0" />
         <pod name="Firebase/Messaging" spec="~> 6.3.0" />
