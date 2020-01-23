@@ -1,5 +1,6 @@
 package by.chemerisuk.cordova.firebase;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
@@ -29,11 +31,13 @@ public class FirebaseMessagingPluginService extends FirebaseMessagingService {
     public static final String EXTRA_FCM_TOKEN = "by.chemerisuk.cordova.firebase.EXTRA_FCM_TOKEN";
     public final static String NOTIFICATION_ICON_KEY = "com.google.firebase.messaging.default_notification_icon";
     public final static String NOTIFICATION_COLOR_KEY = "com.google.firebase.messaging.default_notification_color";
+    public final static String NOTIFICATION_CHANNEL_KEY = "com.google.firebase.messaging.default_notification_channel_id";
 
     private LocalBroadcastManager broadcastManager;
     private NotificationManager notificationManager;
     private int defaultNotificationIcon;
     private int defaultNotificationColor;
+    private String defaultNotificationChannel;
 
     @Override
     public void onCreate() {
@@ -43,11 +47,17 @@ public class FirebaseMessagingPluginService extends FirebaseMessagingService {
         try {
             ApplicationInfo ai = getPackageManager().getApplicationInfo(getApplicationContext().getPackageName(), PackageManager.GET_META_DATA);
             this.defaultNotificationIcon = ai.metaData.getInt(NOTIFICATION_ICON_KEY, ai.icon);
+            this.defaultNotificationChannel = ai.metaData.getString(NOTIFICATION_CHANNEL_KEY, "default_channel_id");
             this.defaultNotificationColor = ContextCompat.getColor(this, ai.metaData.getInt(NOTIFICATION_COLOR_KEY));
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Failed to load meta-data", e);
         } catch(Resources.NotFoundException e) {
             Log.e(TAG, "Failed to load notification color", e);
+        }
+        // On Android O or greater we need to create a new notification channel
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.notificationManager.createNotificationChannel(
+                new NotificationChannel(this.defaultNotificationChannel, "Miscellaneous", NotificationManager.IMPORTANCE_DEFAULT));
         }
     }
 
@@ -77,7 +87,7 @@ public class FirebaseMessagingPluginService extends FirebaseMessagingService {
     }
 
     private void showAlert(RemoteMessage.Notification notification) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, notification.getChannelId());
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, this.defaultNotificationChannel);
         builder.setContentTitle(notification.getTitle());
         builder.setContentText(notification.getBody());
         builder.setGroup(notification.getTag());
