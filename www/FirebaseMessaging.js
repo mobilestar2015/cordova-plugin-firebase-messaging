@@ -22,19 +22,21 @@ module.exports = {
     onBackgroundMessage: function(callack, error) {
         exec(callack, error, PLUGIN_NAME, "onBackgroundMessage", []);
     },
-    revokeToken: function() {
-        return new Promise(function(resolve, reject) {
-            exec(resolve, reject, PLUGIN_NAME, "revokeToken", []);
-        });
+    clearNotifications: function(callack, error) {
+        exec(callack, error, PLUGIN_NAME, "clearNotifications", []);
     },
-    getInstanceId: function() {
+    deleteToken: function() {
         return new Promise(function(resolve, reject) {
-            exec(resolve, reject, PLUGIN_NAME, "getInstanceId", []);
+            exec(resolve, reject, PLUGIN_NAME, "deleteToken", []);
         });
     },
     getToken: function(type) {
         return new Promise(function(resolve, reject) {
-            exec(resolve, reject, PLUGIN_NAME, "getToken", [type]);
+            if (type && typeof type !== "string") {
+                return reject(new TypeError("type argument must be a string"));
+            }
+
+            exec(resolve, reject, PLUGIN_NAME, "getToken", [type || ""]);
         });
     },
     setBadge: function(value) {
@@ -51,7 +53,7 @@ module.exports = {
         return new Promise(function(resolve, reject) {
             if (options) {
                 if (typeof options.forceShow !== "boolean" && typeof options.forceShow !== "undefined") {
-                    return reject(new TypeError("forceShow must be a boolean"));
+                    return reject(new TypeError("forceShow option must be a boolean"));
                 }
             }
 

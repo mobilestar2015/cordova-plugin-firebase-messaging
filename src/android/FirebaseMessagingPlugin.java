@@ -14,10 +14,6 @@ import android.util.Log;
 
 import androidx.core.app.NotificationManagerCompat;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -27,7 +23,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -39,7 +34,7 @@ import static androidx.core.content.ContextCompat.getSystemService;
 
 
 public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
-    private static final String TAG = "FirebaseMessagingPlugin";
+    private static final String TAG = "FCMPlugin";
 
     private JSONObject lastBundle;
     private boolean isBackground = false;
@@ -49,84 +44,70 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
     private CallbackContext backgroundCallback;
     private static FirebaseMessagingPlugin instance;
     private NotificationManager notificationManager;
+    private FirebaseMessaging firebaseMessaging;
 
     @Override
     protected void pluginInitialize() {
         FirebaseMessagingPlugin.instance = this;
 
+        firebaseMessaging = FirebaseMessaging.getInstance();
         notificationManager = getSystemService(cordova.getActivity(), NotificationManager.class);
         lastBundle = getNotificationData(cordova.getActivity().getIntent());
     }
 
     @CordovaMethod
     private void subscribe(String topic, final CallbackContext callbackContext) {
-        FirebaseMessaging.getInstance().subscribeToTopic(topic)
-            .addOnCompleteListener(cordova.getActivity(), new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(Task<Void> task) {
-                    if (task.isSuccessful()) {
-                        callbackContext.success();
-                    } else {
-                        callbackContext.error(task.getException().getMessage());
-                    }
-                }
-            });
+        firebaseMessaging.subscribeToTopic(topic).addOnCompleteListener(cordova.getActivity(), task -> {
+            if (task.isSuccessful()) {
+                callbackContext.success();
+            } else {
+                callbackContext.error(task.getException().getMessage());
+            }
+        });
     }
 
     @CordovaMethod
     private void unsubscribe(String topic, final CallbackContext callbackContext) {
-        FirebaseMessaging.getInstance().unsubscribeFromTopic(topic)
-            .addOnCompleteListener(cordova.getActivity(), new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(Task<Void> task) {
-                    if (task.isSuccessful()) {
-                        callbackContext.success();
-                    } else {
-                        callbackContext.error(task.getException().getMessage());
-                    }
-                }
-            });
+        firebaseMessaging.unsubscribeFromTopic(topic).addOnCompleteListener(cordova.getActivity(), task -> {
+            if (task.isSuccessful()) {
+                callbackContext.success();
+            } else {
+                callbackContext.error(task.getException().getMessage());
+            }
+        });
     }
 
     @CordovaMethod
-    private void revokeToken(CallbackContext callbackContext) throws IOException {
-        FirebaseInstanceId.getInstance().deleteInstanceId();
+    private void clearNotifications(CallbackContext callbackContext) {
+        notificationManager.cancelAll();
 
         callbackContext.success();
     }
 
     @CordovaMethod
-    private void getInstanceId(final CallbackContext callbackContext) {
-        FirebaseInstanceId.getInstance().getInstanceId()
-            .addOnCompleteListener(cordova.getActivity(), new OnCompleteListener<InstanceIdResult>() {
-                @Override
-                public void onComplete(Task<InstanceIdResult> task) {
-                    if (task.isSuccessful()) {
-                        callbackContext.success(task.getResult().getId());
-                    } else {
-                        callbackContext.error(task.getException().getMessage());
-                    }
-                }
-            });
+    private void deleteToken(CallbackContext callbackContext) {
+        firebaseMessaging.deleteToken().addOnCompleteListener(cordova.getActivity(), task -> {
+            if (task.isSuccessful()) {
+                callbackContext.success();
+            } else {
+                callbackContext.error(task.getException().getMessage());
+            }
+        });
     }
 
     @CordovaMethod
     private void getToken(String type, final CallbackContext callbackContext) {
-        if (type != null) {
+        if (type.isEmpty()) {
+            firebaseMessaging.getToken().addOnCompleteListener(cordova.getActivity(), task -> {
+                if (task.isSuccessful()) {
+                    callbackContext.success(task.getResult());
+                } else {
+                    callbackContext.error(task.getException().getMessage());
+                }
+            });
+        } else {
             callbackContext.sendPluginResult(
                 new PluginResult(PluginResult.Status.OK, (String)null));
-        } else {
-            FirebaseInstanceId.getInstance().getInstanceId()
-                .addOnCompleteListener(cordova.getActivity(), new OnCompleteListener<InstanceIdResult>() {
-                    @Override
-                    public void onComplete(Task<InstanceIdResult> task) {
-                        if (task.isSuccessful()) {
-                            callbackContext.success(task.getResult().getToken());
-                        } else {
-                            callbackContext.error(task.getException().getMessage());
-                        }
-                    }
-                });
         }
     }
 
@@ -170,7 +151,7 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
     }
 
     @CordovaMethod
-    private void requestPermission(JSONObject options, CallbackContext callbackContext) throws JSONException {
+    private void requestPermission(JSONObject options, CallbackContext callbackContext) {
         Context context = cordova.getActivity().getApplicationContext();
 
         this.forceShow = options.optBoolean("forceShow");
@@ -357,7 +338,7 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
     }
 
     private static JSONObject toJSON(RemoteMessage.Notification notification) throws JSONException {
-        return new JSONObject()
+        JSONObject result = new JSONObject()
             .put("body", notification.getBody())
             .put("title", notification.getTitle())
             .put("sound", notification.getSound())
@@ -365,5 +346,12 @@ public class FirebaseMessagingPlugin extends ReflectiveCordovaPlugin {
             .put("tag", notification.getTag())
             .put("color", notification.getColor())
             .put("clickAction", notification.getClickAction());
+
+        Uri imageUri = notification.getImageUrl();
+        if (imageUri != null) {
+            result.put("imageUrl", imageUri.toString());
+        }
+
+        return result;
     }
 }

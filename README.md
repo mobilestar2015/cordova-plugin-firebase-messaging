@@ -1,5 +1,5 @@
 # Cordova plugin for [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging/)
-[![NPM version][npm-version]][npm-url] [![NPM downloads][npm-downloads]][npm-url] [![Twitter][twitter-follow]][twitter-url]
+[![NPM version][npm-version]][npm-url] [![NPM downloads][npm-downloads]][npm-url] [![NPM total downloads][npm-total-downloads]][npm-url] [![PayPal donate](https://img.shields.io/badge/paypal-donate-ff69b4?logo=paypal)][donate-url] [![Twitter][twitter-follow]][twitter-url]
 
 | [![Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)][donate-url] | Your help is appreciated. Create a PR, submit a bug or just grab me :beer: |
 |-|-|
@@ -29,9 +29,7 @@ If you get an error about CocoaPods being unable to find compatible versions, ru
     
     $ pod repo update
 
-Plugin depends on [cordova-support-google-services](https://github.com/chemerisuk/cordova-support-google-services) for setting up google services properly. Please read the [README](https://github.com/chemerisuk/cordova-support-google-services/blob/master/README.md) carefully in order to avoid common issues with a project configuration.
-
-Use variables `FIREBASE_MESSAGING_VERSION` and `ANDROIDX_CORE_VERSION` to override dependency versions on Android.
+Use variables `IOS_FIREBASE_MESSAGING_VERSION`, `ANDROID_FIREBASE_MESSAGING_VERSION` and `ANDROIDX_CORE_VERSION` to override dependency versions on Android.
 
 ## Methods
 In general (for both platforms) you can only rely on custom data fields from a FCM payload.
@@ -72,14 +70,6 @@ cordova.plugins.firebase.messaging.requestPermission({forceShow: true}).then(fun
 });
 ```
 
-### getInstanceId()
-Retrieves the app instance id from the service.
-```js
-cordova.plugins.firebase.messaging.getInstanceId().then(function(instanceId) {
-    console.log("Got instanceId: ", instanceId);
-});
-```
-
 ### getToken(_type_)
 Returns a promise that fulfills with the current FCM token.
 ```js
@@ -87,18 +77,26 @@ cordova.plugins.firebase.messaging.getToken().then(function(token) {
     console.log("Got device token: ", token);
 });
 ```
-This method also accepts optional argument `type`. Currently iOS implementation supports values `"apns-buffer"` and `"apns-string"` that defines presentation of resolved APNS token:
+This method also accepts optional argument `type`. Currently iOS platform supports values `"apns-buffer"` and `"apns-string"` that defines presentation of resolved APNS token:
 ```js
 cordova.plugins.firebase.messaging.getToken("apns-string").then(function(token) {
     console.log("APNS hex device token: ", token);
 });
 ```
 
-### revokeToken
+### clearNotifications
+Clear all notifications from system notification bar.
+```js
+cordova.plugins.firebase.messaging.clearNotifications(function() {
+    console.log("Notification messages cleared successfully");
+});
+```
+
+### deleteToken
 Delete the Instance ID (Token) and the data associated with it.
 Call getToken to generate a new one.
 ```js
-cordova.plugins.firebase.messaging.revokeToken().then(function() {
+cordova.plugins.firebase.messaging.deleteToken().then(function() {
     console.log("Token revoked successfully");
 });
 ```
@@ -214,6 +212,7 @@ You can also define what color is used with your notification. Different android
 [npm-url]: https://www.npmjs.com/package/cordova-plugin-firebase-messaging
 [npm-version]: https://img.shields.io/npm/v/cordova-plugin-firebase-messaging.svg
 [npm-downloads]: https://img.shields.io/npm/dm/cordova-plugin-firebase-messaging.svg
+[npm-total-downloads]: https://img.shields.io/npm/dt/cordova-plugin-firebase-messaging.svg?label=total+downloads
 [twitter-url]: https://twitter.com/chemerisuk
 [twitter-follow]: https://img.shields.io/twitter/follow/chemerisuk.svg?style=social&label=Follow%20me
 [donate-url]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6HLVTJDGQQ6EY&source=url
